@@ -1,0 +1,24 @@
+{
+  "name": "google-auth-exporter",
+  "version": "1.0.0",
+  "description": "Convert 2fa uri to secrets",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "2fa",
+    "google",
+    "authenticator",
+    "export",
+    "migrate"
+  ],
+  "author": "Kristian Rekstad",
+  "license": "MIT",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "prompt": "^1.0.0",
+    "protobufjs": "~6.9.0"
+  }
+}
