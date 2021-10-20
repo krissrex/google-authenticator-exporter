@@ -71,7 +71,7 @@ function saveToFile(filename, data) {
 }
 
 /**
- * Generate qrcodes from teh accounts that can be scanned with an authenticator app
+ * Generate qrcodes from the accounts that can be scanned with an authenticator app
  * @param accounts A list of the auth accounts
  */
 function saveToQRCodes(accounts){
@@ -107,13 +107,13 @@ function saveToQRCodes(accounts){
 }
 
 /**
- * Saves to jason if the user said yes.
- * @param promptResult The results from the promtg given to the user.
+ * Saves to json if the user said yes.
+ * @param promptResult The results from the promt given to the user.
  * @param accounts A list of the auth accounts.
  */
-function toJson(promptResult, accounts) {
-  const filename = promptResult.filename;
-  if (promptResult.saveToFile.toLowerCase().startsWith("y") && filename) {
+function toJson(filename, saveToFile, accounts) {
+  const filename = filename;
+  if (saveToFile.toLowerCase().startsWith("y") && filename) {
     console.log(`Saving to "${filename}"...`);
     saveToFile(filename, JSON.stringify(accounts, undefined, 4));
   } else {
@@ -175,7 +175,7 @@ function promptUserForUri() {
         saveToQRCodes(accounts)
         break
       case resultType.JSON:
-        toJson(result, accounts);
+        toJson(result.filename, result.saveToFile, accounts);
         break
     }
   })
