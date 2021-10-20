@@ -112,8 +112,10 @@ function saveToQRCodes(accounts){
  * @param accounts A list of the auth accounts.
  */
 function toJson(filename, saveToFile, accounts) {
-  const filename = filename;
-  if (saveToFile.toLowerCase().startsWith("y") && filename) {
+  console.log(filename)
+  console.log(saveToFile)
+  
+  if (saveToFile && filename) {
     console.log(`Saving to "${filename}"...`);
     saveToFile(filename, JSON.stringify(accounts, undefined, 4));
   } else {
@@ -175,7 +177,8 @@ function promptUserForUri() {
         saveToQRCodes(accounts)
         break
       case resultType.JSON:
-        toJson(result.filename, result.saveToFile, accounts);
+        const saveToFile = result.saveToFile.toLowerCase().startsWith("y")
+        toJson(result.filename, saveToFile, accounts);
         break
     }
   })
