@@ -71,6 +71,62 @@ function saveToFile(filename, data) {
 }
 
 /**
+ * Generate qrcodes from the accounts that can be scanned with an authenticator app
+ * @param accounts A list of the auth accounts
+ */
+function saveToQRCodes(accounts){
+  
+  const QRCode = require('qrcode')
+  const fs = require("fs");
+  
+  const directory = "./qrCodes"
+  if(!fs.existsSync(directory)){
+    fs.mkdirSync(directory)
+  }
+
+  accounts.forEach(account => {
+    const name = account.name
+    const issuer = account.issuer
+    const secret = account.totpSecret
+    
+    const url = `otpauth://totp/${encodeURI(name)}?secret=${encodeURI(secret)}&issuer=${encodeURI(issuer)}`
+    const file = `${directory}/${issuer}(${name}).png`
+  
+    if(fs.existsSync(file)) {
+      console.log(`${file.yellow} already exists.`)
+    }else{
+      QRCode.toFile(file, url, (error) => {
+        if(error != null){
+          console.log(`Something went wrong while creating ${file}`, error)
+        }
+        console.log(`${file.green} created.`)
+      })
+    }
+    
+  })
+}
+
+/**
+ * Saves to json if the user said yes.
+ * @param promptResult The results from the promt given to the user.
+ * @param accounts A list of the auth accounts.
+ */
+function toJson(filename, saveToFile, accounts) {
+  console.log(filename)
+  console.log(saveToFile)
+  
+  if (saveToFile && filename) {
+    console.log(`Saving to "${filename}"...`);
+    saveToFile(filename, JSON.stringify(accounts, undefined, 4));
+  } else {
+    console.log("Not saving. Here is the data:");
+    console.log(accounts);
+    console.log("What you want to use as secret key in other password managers is ".yellow + "'totpSecret'".blue + ", not 'secret'!".yellow);
+  }
+}
+
+
+/**
  * Act as a CLI and ask for `otpauth-migration://` uri and optionally file to store in.
  */
 function promptUserForUri() {
@@ -91,9 +147,23 @@ function promptUserForUri() {
   // I took a picture of the QR with my camera, because Google Authenticator prevents screenshots.
   // I then uploaded the picture to my pc via the SD-card and scanned with my phone...
   // Very many steps
+  
+  const resultType = {
+    QRCODE: "qrcode",
+    JSON: "json",
+  }
+
+  const mode = process.argv.includes('-q') ? resultType.QRCODE : resultType.JSON
+
+  const promptVariables = ["totpUri"]
+
+  if(mode === resultType.JSON){
+    promptVariables.push("saveToFile")
+    promptVariables.push("filename")
+  }
 
   prompt.start();
-  prompt.get(["totpUri", "saveToFile", "filename"], (err, result) => {
+  prompt.get(promptVariables, (err, result) => {
     if (err) { return console.error(err); }
 
     const uri = result.totpUri;
@@ -101,15 +171,16 @@ function promptUserForUri() {
     const data = new URLSearchParams(queryParams).get("data");
     
     const accounts = decode(data);
-    const filename = result.filename;
-    if (result.saveToFile.toLowerCase().startsWith("y") && filename) {
-      console.log(`Saving to "${filename}"...`);
-      saveToFile(filename, JSON.stringify(accounts, undefined, 4));
-    } else {
-      console.log("Not saving. Here is the data:")
-      console.log(accounts);
+    
+    switch(mode){
+      case resultType.QRCODE:
+        saveToQRCodes(accounts)
+        break
+      case resultType.JSON:
+        const saveToFile = result.saveToFile.toLowerCase().startsWith("y")
+        toJson(result.filename, saveToFile, accounts);
+        break
     }
-    console.log("What you want to use as secret key in other password managers is ".yellow + "'totpSecret'".blue + ", not 'secret'!".yellow)
   })
 }
 
