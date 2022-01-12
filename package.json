@@ -21,6 +21,6 @@
     "colors": "^1.4.0",
     "prompt": "^1.0.0",
     "protobufjs": "~6.9.0",
-    "qrcode": "^1.4.4"
+    "qrcode": "^1.5.0"
   }
 }
