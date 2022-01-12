@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Convert 2fa uri to secrets",
   "main": "src/index.js",
+  "repository": "github:krissrex/google-authenticator-exporter",
   "scripts": {
     "start": "node ./src/index.js",
     "start:qrcode": "node ./src/index.js -q",
@@ -19,8 +20,8 @@
   "license": "MIT",
   "dependencies": {
     "colors": "^1.4.0",
-    "prompt": "^1.0.0",
-    "protobufjs": "~6.9.0",
+    "prompt": "^1.2.1",
+    "protobufjs": "^6.11.2",
     "qrcode": "^1.5.0"
   }
 }
