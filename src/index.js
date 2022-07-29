@@ -85,7 +85,7 @@ function saveToQRCodes(accounts){
   }
 
   accounts.forEach(account => {
-    const name = account.name || ""
+    const name = account.name ? account.name.replace(/[<>:"\/\\|?*]/g, '_') : ""
     const issuer = account.issuer || ""
     const secret = account.totpSecret
 
