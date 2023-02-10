@@ -84,13 +84,16 @@ function saveToQRCodes(accounts){
     fs.mkdirSync(directory)
   }
 
+  /** Windows is picky with filenames. */
+  const sanitizeFilename = (filename) => { filename.replace(/[\<>:"\/\\|?*#%&{}$+!`'=@]/g, "") }
+  
   accounts.forEach(account => {
     const name = account.name || ""
     const issuer = account.issuer || ""
     const secret = account.totpSecret
 
     const url = `otpauth://totp/${encodeURI(name)}?secret=${encodeURI(secret)}&issuer=${encodeURI(issuer)}`
-    const file = `${directory}/${issuer || "No issuer"} (${name}).png`
+    const file = `${directory}/${issuer || "No issuer"} (${sanitizeFilename(name)}).png`
 
     if(fs.existsSync(file)) {
       console.log(`${file.yellow} already exists.`)
