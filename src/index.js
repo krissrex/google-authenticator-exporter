@@ -85,7 +85,7 @@ function saveToQRCodes(accounts){
   }
 
   /** Windows is picky with filenames. */
-  const sanitizeFilename = (filename) => { filename.replace(/[\<>:"\/\\|?*#%&{}$+!`'=@]/g, "") }
+  const sanitizeFilename = (filename) => filename.replace(/[\<>:"\/\\|?*#%&{}$+!`'=@]/g, "")
   
   accounts.forEach(account => {
     const name = account.name || ""
