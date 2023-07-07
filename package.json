@@ -21,7 +21,7 @@
   "dependencies": {
     "colors": "^1.4.0",
     "prompt": "^1.2.1",
-    "protobufjs": "^6.11.3",
+    "protobufjs": "^7.2.4",
     "qrcode": "^1.5.0"
   }
 }
