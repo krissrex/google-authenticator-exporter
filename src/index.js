@@ -150,6 +150,8 @@ function promptUserForUri() {
   let prompt;
   try {
     prompt = require("prompt");
+    const qr = require("qrcode-reader");
+    const Jimp = require("jimp");
   } catch(ex) {
     console.error("Error! Missing dependencies:")
     console.error("You need to first run: npm install");
@@ -168,40 +170,67 @@ function promptUserForUri() {
   console.log("you risk someone storing the QR code or URI text and stealing your 2FA codes!".red)
   console.log("Remember that the data contains the website, your email and the 2FA code!".red)
 
-  // Future improvement: add capability to upload/select QR jpg and scan it.
-  // I took a picture of the QR with my camera, because Google Authenticator prevents screenshots.
-  // I then uploaded the picture to my pc via the SD-card and scanned with my phone...
-  // Very many steps
+  console.log("You can now directly pass an image file containing the QR code using the `-i` option.")
 
   const resultType = {
     QRCODE: "qrcode",
     JSON: "json",
+    IMAGE: "image",
   }
 
-  const mode = process.argv.includes('-q') ? resultType.QRCODE : resultType.JSON
+  const mode = process.argv.includes('-q') ? resultType.QRCODE : 
+    process.argv.includes('-i') ? "image" : resultType.JSON
 
   const promptVariables = ["totpUri"]
 
   if(mode === resultType.JSON){
     promptVariables.push("saveToFile")
     promptVariables.push("filename")
+  } else if (mode === resultType.IMAGE) {
+    promptVariables.push("imagePath")
   }
 
   prompt.start();
   prompt.get(promptVariables, (err, result) => {
     if (err) { return console.error(err); }
 
-    const uri = result.totpUri;
-    const accounts = decodeExportUri(uri);
+    let accounts;
+    if (mode === resultType.IMAGE) {
+      Jimp.read(fs.readFileSync(result.imagePath), function(err, image) {
+        if (err) { return console.error(err); }
+        const qrCode = new qr();
+        qrCode.callback = function(err, value) {
+          if (err) { return console.error(err); }
+          accounts = decodeExportUri(value.result);
+          
+          switch(mode){
+            case resultType.QRCODE:
+              saveToQRCodes(accounts)
+              break
+            case resultType.JSON:
+              const saveToFileInput = result.saveToFile.toLowerCase().startsWith("y")
+              toJson(result.filename, saveToFileInput, accounts);
+              break
+            case resultType.IMAGE:
+              saveToQRCodes(accounts)
+              break
+          }
+        };
+        qrCode.decode(image.bitmap);
+      });
+    } else {
+      const uri = result.totpUri;
+      accounts = decodeExportUri(uri);
 
-    switch(mode){
-      case resultType.QRCODE:
-        saveToQRCodes(accounts)
-        break
-      case resultType.JSON:
-        const saveToFileInput = result.saveToFile.toLowerCase().startsWith("y")
-        toJson(result.filename, saveToFileInput, accounts);
-        break
+      switch(mode){
+        case resultType.QRCODE:
+          saveToQRCodes(accounts)
+          break
+        case resultType.JSON:
+          const saveToFileInput = result.saveToFile.toLowerCase().startsWith("y")
+          toJson(result.filename, saveToFileInput, accounts);
+          break
+      }
     }
   })
 }

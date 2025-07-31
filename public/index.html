@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Authenticator 密钥提取</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-container {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #preview {
+            max-width: 300px;
+            margin: 20px auto;
+            display: none;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Authenticator 密钥提取</h1>
+    
+    <div class="upload-container">
+        <h2>上传QR码图片</h2>
+        <input type="file" id="qr-upload" accept="image/*">
+        <p>或将图片拖拽到此处</p>
+    </div>
+    
+    <img id="preview" alt="QR码预览">
+    
+    <div id="result">
+        <h3>提取结果</h3>
+        <pre id="result-content"></pre>
+    </div>
+    
+    <script>
+        const uploadInput = document.getElementById('qr-upload');
+        const preview = document.getElementById('preview');
+        const resultDiv = document.getElementById('result');
+        const resultContent = document.getElementById('result-content');
+        
+        uploadInput.addEventListener('change', handleFileSelect);
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                processImage(file);
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function processImage(file) {
+            const formData = new FormData();
+            formData.append('qrImage', file);
+            
+            fetch('/api/process-qr', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    resultContent.textContent = `错误: ${data.error}`;
+                } else {
+                    resultContent.textContent = JSON.stringify(data, null, 2);
+                }
+                resultDiv.style.display = 'block';
+            })
+            .catch(error => {
+                resultContent.textContent = `处理失败: ${error.message}`;
+                resultDiv.style.display = 'block';
+            });
+        }
+        
+        // 拖拽上传功能
+        const uploadContainer = document.querySelector('.upload-container');
+        uploadContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadContainer.style.borderColor = '#666';
+        });
+        
+        uploadContainer.addEventListener('dragleave', () => {
+            uploadContainer.style.borderColor = '#ccc';
+        });
+        
+        uploadContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadContainer.style.borderColor = '#ccc';
+            uploadInput.files = e.dataTransfer.files;
+            handleFileSelect({ target: uploadInput });
+        });
+    </script>
+</body>
+</html>
