@@ -26,6 +26,6 @@
     "qrcode": "^1.5.3"
   },
   "devDependencies": {
-    "vitest": "^1.6.0"
+    "vitest": "^4.1.10"
   }
 }
